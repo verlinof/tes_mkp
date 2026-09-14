@@ -8,13 +8,10 @@ import (
 
 	"github.com/verlinof/fiber-project-structure/configs/app_config"
 	"github.com/verlinof/fiber-project-structure/configs/db_config"
-	"github.com/verlinof/fiber-project-structure/configs/minio_config"
-	"github.com/verlinof/fiber-project-structure/configs/redis_config"
 	"github.com/verlinof/fiber-project-structure/db"
 	"github.com/verlinof/fiber-project-structure/internal/routes"
 	pkg_cron "github.com/verlinof/fiber-project-structure/pkg/cron"
 	pkg_email "github.com/verlinof/fiber-project-structure/pkg/email"
-	pkg_minio "github.com/verlinof/fiber-project-structure/pkg/minio_client"
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,15 +22,12 @@ func main() {
 	// Init Global Config
 	app_config.Config = app_config.LoadConfig()
 	db_config.Config = db_config.LoadConfig()
-	redis_config.Config = redis_config.LoadConfig()
-	minio_config.Config = minio_config.LoadConfig()
 
 	// Email Worker
 	pkg_email.InitEmailWorker(5, 100, 3)
 
 	// Connect Database & Services
 	db.Init()
-	pkg_minio.Init()
 
 	// Init Fiber Engine
 	app := fiber.New()
