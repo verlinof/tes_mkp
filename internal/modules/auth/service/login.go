@@ -3,9 +3,9 @@ package auth_service
 import (
 	"context"
 
+	"github.com/golang-jwt/jwt/v5"
 	auth_model "github.com/verlinof/fiber-project-structure/internal/modules/auth/model"
 	pkg_jwt "github.com/verlinof/fiber-project-structure/pkg/jwt"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,6 +21,8 @@ func (s *AuthService) Login(ctx context.Context, req auth_model.LoginRequest) (a
 
 	claims := jwt.MapClaims{
 		"id_user": user.ID,
+		"name":    user.Name,
+		"email":   user.Email,
 	}
 
 	token, err := pkg_jwt.GenerateJWT(&claims)
@@ -35,7 +37,6 @@ func (s *AuthService) Login(ctx context.Context, req auth_model.LoginRequest) (a
 			Name:      user.Name,
 			Email:     user.Email,
 			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
 		},
 	}, nil
 }

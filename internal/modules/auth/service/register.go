@@ -28,6 +28,5 @@ func (s *AuthService) Register(ctx context.Context, req auth_model.RegisterReque
 		Name:      user.Name,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
 	}, nil
 }

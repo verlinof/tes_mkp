@@ -26,38 +26,37 @@ func AuthMiddleware() fiber.Handler {
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
 		return c.Status(fiber.StatusBadRequest).JSON(pkg_error.NewBadRequest(err))
-	} else {
-		c.Status(fiber.StatusUnauthorized)
-		return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("Unauthorized")))
 	}
+	return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("unauthorized")))
 }
 
 func CheckUserExists(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Get token from context, it's set by the jwtware middleware
-		token := c.Locals("token").(*jwt.Token)
+		token, ok := c.Locals("token").(*jwt.Token)
+		if !ok || token == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("unauthorized")))
+		}
 
-		// Get claims from token
-		claims := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("invalid token claims")))
+		}
 
-		// Get user ID from claims. JWT numbers are float64 by default.
 		userIDFloat, ok := claims["id_user"].(float64)
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("invalid token claims")))
 		}
-		userID := int(userIDFloat)
+		userID := int64(userIDFloat)
 
-		// Check if user exists in the database
 		var user auth_model.User
 		if err := db.Table("users").First(&user, "id = ?", userID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("unauthorized")))
+				return c.Status(fiber.StatusUnauthorized).JSON(pkg_error.NewUnauthorized(fmt.Errorf("user not found")))
 			}
-			// Any other database error
 			return c.Status(fiber.StatusInternalServerError).JSON(pkg_error.NewInternalServerError(err))
 		}
 
-		// Proceed to the next handler
+		c.Locals("user", user)
 		return c.Next()
 	}
 }

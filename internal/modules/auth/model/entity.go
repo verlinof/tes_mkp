@@ -6,12 +6,11 @@ import (
 
 // User represents the users table entity in the database
 type User struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64     `json:"id" gorm:"column:id;primaryKey"`
+	Name      string    `json:"name" gorm:"column:name"`
+	Email     string    `json:"email" gorm:"column:email"`
+	Password  string    `json:"password" gorm:"column:password"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
 func (User) TableName() string {
