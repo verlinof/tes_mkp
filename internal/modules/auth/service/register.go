@@ -13,10 +13,16 @@ func (s *AuthService) Register(ctx context.Context, req auth_model.RegisterReque
 		return auth_model.UserResponse{}, err
 	}
 
+	role := req.Role
+	if role == "" {
+		role = "customer"
+	}
+
 	user := auth_model.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: string(hashedPassword),
+		Role:     role,
 	}
 
 	if err := s.db.WithContext(ctx).Create(&user).Error; err != nil {
@@ -27,6 +33,7 @@ func (s *AuthService) Register(ctx context.Context, req auth_model.RegisterReque
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}, nil
 }

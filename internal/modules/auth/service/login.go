@@ -2,6 +2,7 @@ package auth_service
 
 import (
 	"context"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	auth_model "github.com/verlinof/fiber-project-structure/internal/modules/auth/model"
@@ -23,6 +24,8 @@ func (s *AuthService) Login(ctx context.Context, req auth_model.LoginRequest) (a
 		"id_user": user.ID,
 		"name":    user.Name,
 		"email":   user.Email,
+		"role":    user.Role,
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days expiration
 	}
 
 	token, err := pkg_jwt.GenerateJWT(&claims)
@@ -36,6 +39,7 @@ func (s *AuthService) Login(ctx context.Context, req auth_model.LoginRequest) (a
 			ID:        user.ID,
 			Name:      user.Name,
 			Email:     user.Email,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 		},
 	}, nil

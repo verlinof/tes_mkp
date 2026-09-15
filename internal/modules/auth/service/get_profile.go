@@ -16,6 +16,7 @@ func (s *AuthService) GetProfile(ctx context.Context, userID int64) (auth_model.
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}, nil
 }

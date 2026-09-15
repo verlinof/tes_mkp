@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "c6a1b2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
     "name": "Cinema Ticketing API - MKP Test",
-    "description": "Postman Collection for Cinema Ticketing REST API (Mitra Kasih Perkasa Test 2025)",
+    "description": "Postman Collection for Cinema Ticketing REST API (Mitra Kasih Perkasa Test 2025)\n- Role 'admin' for Create/Update/Delete Jadwal Tayang\n- Role 'customer' and 'admin' for Read Jadwal Tayang & Profile",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -23,7 +23,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register User",
+          "name": "Register Admin",
           "request": {
             "method": "POST",
             "header": [
@@ -34,7 +34,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"user\",\n    \"email\": \"user@gmail.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n    \"name\": \"Admin\",\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/v1/register",
@@ -45,7 +50,34 @@
           "response": []
         },
         {
-          "name": "Login User",
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"User\",\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"customer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/register",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
           "event": [
             {
               "listen": "test",
@@ -55,7 +87,7 @@
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.data && jsonData.data.token) {",
                   "        pm.collectionVariables.set(\"bearer_token\", jsonData.data.token);",
-                  "        console.log(\"Bearer token auto-saved:\", jsonData.data.token);",
+                  "        console.log(\"Admin Bearer token auto-saved:\", jsonData.data.token);",
                   "    }",
                   "}"
                 ],
@@ -73,7 +105,56 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"user@gmail.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/login",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.collectionVariables.set(\"bearer_token\", jsonData.data.token);",
+                  "        console.log(\"Customer Bearer token auto-saved:\", jsonData.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/v1/login",
@@ -107,17 +188,215 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Jadwal Tayang (Showtimes)",
+      "item": [
+        {
+          "name": "Create Jadwal Tayang (Admin Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set(\"showtime_id\", jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"movie_id\": 1,\n    \"studio_id\": 1,\n    \"start_time\": \"2026-09-20T14:00:00+07:00\",\n    \"end_time\": \"2026-09-20T16:30:00+07:00\",\n    \"price\": 50000,\n    \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/showtimes",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "showtimes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Jadwal Tayang (User & Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/showtimes?page=1&limit=10&order_by=startTime:asc",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "showtimes"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "order_by",
+                  "value": "startTime:asc"
+                },
+                {
+                  "key": "q_status_eq",
+                  "value": "scheduled",
+                  "disabled": true
+                },
+                {
+                  "key": "q_movieId_eq",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "q_studioId_eq",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Jadwal Tayang By ID (User & Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/showtimes/{{showtime_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "showtimes", "{{showtime_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Jadwal Tayang (Admin Only)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"price\": 55000,\n    \"status\": \"scheduled\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/showtimes/{{showtime_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "showtimes", "{{showtime_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Jadwal Tayang (Admin Only)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/showtimes/{{showtime_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "showtimes", "{{showtime_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8080",
+      "value": "http://localhost:8000",
       "type": "string"
     },
     {
       "key": "bearer_token",
       "value": "",
+      "type": "string"
+    },
+    {
+      "key": "showtime_id",
+      "value": "1",
       "type": "string"
     }
   ]
