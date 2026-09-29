@@ -23,7 +23,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Service untuk menjalankan migrasi Goose / Go CLI
   migration:
     image: golang:1.25-alpine
     container_name: tes_mkp_migration
