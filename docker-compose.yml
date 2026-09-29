@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tes_mkp_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-mkp_test}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mkp_test}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Service untuk menjalankan migrasi Goose / Go CLI
+  migration:
+    image: golang:1.25-alpine
+    container_name: tes_mkp_migration
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      DB_DRIVER: ${DB_DRIVER:-postgres}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-app_db}
+      GOOSE_DRIVER: ${GOOSE_DRIVER:-postgres}
+      GOOSE_DBSTRING: "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-app_db}?sslmode=disable"
+      GOOSE_MIGRATION_DIR: "./db/migration"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: >
+      sh -c '
+        if ! command -v goose > /dev/null 2>&1; then
+          echo "Installing Goose CLI..."
+          go install github.com/pressly/goose/v3/cmd/goose@latest
+        fi
+        export PATH="$$PATH:$$(go env GOPATH)/bin"
+
+        if [ "$$#" -eq 0 ]; then
+          echo "Running migration up..."
+          goose -dir ./db/migration postgres "$$GOOSE_DBSTRING" up
+        else
+          exec "$$@"
+        fi
+      '
+
+volumes:
+  postgres_data:
+    driver: local
