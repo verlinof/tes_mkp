@@ -37,7 +37,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: ${DB_NAME:-app_db}
       GOOSE_DRIVER: ${GOOSE_DRIVER:-postgres}
-      GOOSE_DBSTRING: "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@postgres:5433/${DB_NAME:-app_db}?sslmode=disable"
+      GOOSE_DBSTRING: "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@postgres:5432/${DB_NAME:-app_db}?sslmode=disable"
       GOOSE_MIGRATION_DIR: "./db/migration"
     depends_on:
       postgres:
