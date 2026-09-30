@@ -37,9 +37,6 @@ WORKDIR /app
 # Copy binary from builder stage
 COPY --from=builder /app/build/api/main ./build/api/
 
-# Copy static files if they exist
-COPY --from=builder /app/pkg/email/email_otp.html ./pkg/email/
-
 # Create directory for storage and set permissions
 RUN mkdir -p /app/storage && \
   chown -R appuser:appgroup /app
