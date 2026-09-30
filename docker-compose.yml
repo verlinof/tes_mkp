@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,12 +6,19 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-mkp_test}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mkp_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mkp_test}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,13 +35,15 @@ services:
       DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-password}
-      DB_NAME: ${DB_NAME:-kube_db}
+      DB_NAME: ${DB_NAME:-mkp_test}
       GOOSE_DRIVER: ${GOOSE_DRIVER:-postgres}
-      GOOSE_DBSTRING: "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@postgres:5432/${DB_NAME:-kube_db}?sslmode=disable"
+      GOOSE_DBSTRING: "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@postgres:5432/${DB_NAME:-mkp_test}?sslmode=disable"
       GOOSE_MIGRATION_DIR: "./db/migration"
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - mkp_network
     entrypoint: >
       sh -c '
         if ! command -v goose > /dev/null 2>&1; then
