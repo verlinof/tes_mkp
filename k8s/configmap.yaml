@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  labels:
+    app: api-service
+data:
+  APP_PORT: "8000"
+  APP_URL: "http://localhost:8000"
+  APP_DIR: "./build/api"
+  DB_DRIVER: "postgres"
+  # Sesuaikan DB_HOST dengan IP host Windows Anda jika MicroK8s jalan di VM terpisah
+  DB_HOST: "host.docker.internal"
+  DB_PORT: "5432"
+  DB_NAME: "app_db"
