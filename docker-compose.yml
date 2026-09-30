@@ -38,6 +38,7 @@ services:
       DB_NAME: ${DB_NAME:-mkp_test}
       DB_SSL_MODE: ${DB_SSL_MODE:-disable}
       GOOSE_DRIVER: ${GOOSE_DRIVER:-postgres}
+      GOOSE_DBSTRING: "host=postgres port=5432 user=${DB_USER:-postgres} password=${DB_PASSWORD:-password} dbname=${DB_NAME:-mkp_test} sslmode=${DB_SSL_MODE:-disable}"
       GOOSE_MIGRATION_DIR: "./db/migration"
     depends_on:
       postgres:
@@ -52,7 +53,7 @@ services:
         fi
         if [ "$$#" -eq 0 ]; then
           echo "Running migration up..."
-          goose -dir ./db/migration postgres "host=postgres port=5432 user=$$DB_USER password=$$DB_PASSWORD dbname=$$DB_NAME sslmode=$$DB_SSL_MODE" up
+          goose up
         else
           exec "$$@"
         fi
